@@ -1,0 +1,567 @@
+/* Import Google Fonts for a modern look (e.g., Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Import Material Icons for icons (like "send", "add") */
+@import url('https://fonts.googleapis.com/css2?family=Material+Icons&display=swap');
+
+/* Define CSS Variables for consistent theming */
+:root {
+    --bg-dark: #1a1a1a; /* Main background color */
+    --bg-medium-dark: #2c2c2c; /* Slightly lighter dark for sidebar/header */
+    --bg-light-dark: #3a3a3a; /* Even lighter dark for list items */
+    --accent-pink-light: #ffb6c1; /* Light pink for headings, status messages */
+    --accent-pink-hot: #ff69b4;   /* Hot pink for buttons, active elements */
+    --text-light: #f0f0f0; /* Light text for dark backgrounds */
+    --text-medium: #bbb; /* Medium gray for secondary text/placeholders */
+    --text-dark: #333; /* Dark text for light backgrounds (e.g., user bubble) */
+    --border-dark: #4a4a4a; /* Dark border lines */
+    --border-medium: #555; /* Medium dark border lines */
+    --chat-bubble-user: #ffb6c1; /* User message bubble (light pink) */
+    --chat-bubble-ai: #4a4a4a; /* AI message bubble (dark gray) */
+    --feedback-bg-selected: #28a745; /* Green for "like" feedback */
+    --feedback-bg-dislike: #dc3545; /* Red for "dislike" feedback or clear button */
+}
+
+/* --- Global Resets & Base Styles --- */
+* {
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Remove default paddings */
+}
+
+body {
+    font-family: 'Inter', sans-serif; /* Apply the Inter font */
+    background-color: var(--bg-dark); /* Dark background from CSS variable */
+    color: var(--text-light); /* Light text from CSS variable */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align items to the top */
+    min-height: 100vh; /* Full viewport height */
+    overflow: hidden; /* Prevent body scroll, allow inner elements to scroll */
+}
+
+/* --- Main Chat Container Layout --- */
+.chat-container {
+    display: flex; /* Use flexbox for sidebar and main chat */
+    width: 100vw; /* Occupy full viewport width */
+    height: 100vh; /* Occupy full viewport height */
+    max-width: 1400px; /* Maximum width for large screens */
+    border-radius: 12px; /* Rounded corners for the entire chat window */
+    overflow: hidden; /* Essential for containing internal scrolling elements */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); /* Deeper shadow for a lifted effect */
+}
+
+/* --- Sidebar Styling --- */
+.sidebar {
+    width: 280px; /* Fixed width for the sidebar */
+    min-width: 280px; /* Ensures it doesn't shrink */
+    background-color: var(--bg-medium-dark); /* Medium dark background */
+    padding: 20px;
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    border-right: 1px solid var(--border-dark); /* Separator line */
+    overflow-y: auto; /* Enable vertical scrolling if history overflows */
+}
+
+/* New Chat Button */
+.new-chat-btn {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: var(--accent-pink-hot); /* Hot pink background */
+    color: white; /* White text */
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 500; /* Medium font weight */
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s; /* Smooth transitions */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and text */
+    margin-bottom: 20px; /* Space below the button */
+}
+
+.new-chat-btn:hover {
+    background-color: #e0559f; /* Slightly darker pink on hover */
+}
+
+.new-chat-btn .material-icons {
+    font-size: 1.4em; /* Size of the Material Icon */
+}
+
+/* History Area Heading */
+.history-area h2 {
+    color: var(--accent-pink-light); /* Light pink color */
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    text-align: left; /* Align to the left */
+}
+
+/* Query History List */
+#queryHistoryList {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0;
+    flex-grow: 1; /* Allows the list to fill available space */
+    border-top: 1px solid var(--border-medium); /* Top border for separation */
+    padding-top: 15px;
+    margin-bottom: 15px; /* Space before the clear button */
+}
+
+#queryHistoryList li {
+    background-color: var(--bg-light-dark); /* Lighter dark background for list items */
+    border: 1px solid var(--border-medium); /* Border for list items */
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    font-size: 0.9em;
+    color: var(--text-light);
+    display: flex;
+    justify-content: space-between; /* Space out title and date */
+    align-items: center;
+    word-break: break-word; /* Ensures long query titles break correctly */
+}
+
+#queryHistoryList li:hover {
+    background-color: #444444; /* Darker hover effect */
+    border-color: var(--accent-pink-light); /* Pink border on hover */
+}
+
+#queryHistoryList li.selected {
+    border-left: 5px solid var(--accent-pink-hot); /* Hot pink border for selected item */
+    background-color: #503842; /* A subtle dark pink for selected background */
+    font-weight: 500; /* Bolder text for selected item */
+}
+
+.history-item-date {
+    font-size: 0.7em;
+    color: var(--text-medium); /* Medium gray for date text */
+    margin-left: 10px;
+    white-space: nowrap; /* Prevents date from wrapping */
+}
+
+/* Clear All History Button */
+#clearHistoryBtn {
+    width: 100%;
+    padding: 8px 15px;
+    background-color: var(--feedback-bg-dislike); /* Red color for destructive action */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: auto; /* Pushes the button to the bottom of the flex container (sidebar) */
+}
+
+#clearHistoryBtn:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
+/* --- Main Chat Area Styling --- */
+.main-chat {
+    flex-grow: 1; /* Allows the main chat area to take remaining space */
+    display: flex;
+    flex-direction: column; /* Stack header, messages, and input vertically */
+    background-color: var(--bg-dark); /* Dark background */
+    position: relative; /* Essential for positioning the sticky input area */
+}
+
+/* Chat Header */
+.chat-header {
+    background-color: var(--bg-medium-dark); /* Medium dark background */
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--border-dark); /* Separator line */
+    text-align: center;
+    position: sticky; /* Makes the header stick to the top */
+    top: 0; /* Sticks to the very top */
+    z-index: 10; /* Ensures it stays above messages */
+}
+
+.chat-header h2 {
+    color: var(--accent-pink-light); /* Light pink color */
+    margin: 0;
+    font-size: 1.4em;
+}
+
+/* Chat Messages Display Area */
+.chat-messages {
+    flex-grow: 1; /* Allows messages to take available vertical space */
+    overflow-y: auto; /* Enables vertical scrolling for messages */
+    padding: 20px;
+    padding-bottom: 120px; /* Critical: Provides space for the fixed input area */
+    display: flex;
+    flex-direction: column; /* Stacks messages vertically */
+    gap: 15px; /* Space between message bubbles */
+}
+
+/* Individual Message Bubble Styling */
+.message {
+    display: flex;
+    align-items: flex-start; /* Align avatar and content to the top */
+    gap: 12px; /* Space between avatar and message content */
+}
+
+.message.user-message {
+    align-self: flex-end; /* Align user messages to the right */
+    max-width: 80%; /* Limit width of user message bubbles */
+}
+
+.message.ai-message {
+    align-self: flex-start; /* Align AI messages to the left */
+    max-width: 75%; /* Limit width of AI message bubbles (slightly smaller) */
+}
+
+/* Message Avatar Styling */
+.message-avatar {
+    width: 30px; /* Avatar size */
+    height: 30px; /* Avatar size */
+    border-radius: 50%; /* Circular avatar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8em; /* Smaller font for avatar text */
+    color: var(--text-light);
+    flex-shrink: 0; /* Prevents avatar from shrinking */
+}
+
+.user-avatar {
+    background-color: var(--accent-pink-hot); /* Hot pink for user avatar */
+}
+
+.ai-avatar {
+    background-color: var(--border-dark); /* Dark gray for AI avatar */
+}
+
+/* Message Content Styling (the bubble itself) */
+.message-content {
+    padding: 10px 15px; /* Reduced padding for a more compact look */
+    border-radius: 16px; /* Slightly less rounded corners */
+    line-height: 1.5; /* Slightly tighter line height */
+    word-wrap: break-word; /* Ensures long words break to fit in bubble */
+    white-space: pre-wrap; /* Preserves whitespace and line breaks from backend */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); /* Lighter shadow for bubbles */
+    font-size: 0.95em; /* Slightly smaller font size for message content */
+}
+
+.user-message .message-content {
+    background-color: var(--chat-bubble-user); /* Light pink for user bubbles */
+    color: var(--text-dark); /* Dark text for light pink background */
+    border-bottom-right-radius: 4px; /* Creates a small "tail" effect */
+}
+
+.ai-message .message-content {
+    background-color: var(--chat-bubble-ai); /* Dark gray for AI bubbles */
+    color: var(--text-light); /* Light text for dark gray background */
+    border-bottom-left-radius: 4px; /* Creates a small "tail" effect */
+}
+
+/* --- Chat Input Area Styling (Sticky at the Bottom) --- */
+.chat-input-area {
+    position: sticky; /* Makes the input area stick to the bottom */
+    bottom: 0; /* Sticks to the very bottom */
+    width: 100%;
+    background-color: var(--bg-dark); /* Dark background */
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-dark); /* Separator line */
+    display: flex;
+    flex-direction: column; /* Stack elements vertically within the input area */
+    align-items: center;
+    gap: 10px; /* Space between input wrapper and feedback/status */
+    z-index: 10; /* Ensures it stays above messages */
+}
+
+/* --- New Ingestion Area Styles --- */
+.data-ingestion-wrapper {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px; /* Space above query input */
+    padding: 15px;
+    border: 1px solid var(--border-dark);
+    border-radius: 12px;
+    background-color: var(--bg-medium-dark);
+}
+
+.data-ingestion-wrapper h3 {
+    color: var(--accent-pink-light);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+.ingestion-input {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    background-color: var(--bg-light-dark);
+    color: var(--text-light);
+    font-size: 0.95em;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ingestion-input::placeholder {
+    color: var(--text-medium);
+}
+
+.ingestion-input:focus {
+    border-color: var(--accent-pink-hot);
+    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.2);
+}
+
+.ingestion-btn {
+    background-color: var(--accent-pink-hot);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    font-size: 1.1em;
+}
+
+.ingestion-btn .material-icons {
+    font-size: 1.3em;
+}
+
+.ingestion-btn:hover {
+    background-color: #e0559f;
+}
+
+.ingestion-btn:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.custom-file-upload {
+    background-color: var(--bg-light-dark);
+    border: 1px solid var(--border-medium);
+    color: var(--text-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.custom-file-upload:hover {
+    border-color: var(--accent-pink-hot);
+    color: var(--accent-pink-light);
+}
+
+.file-name-display {
+    color: var(--text-medium);
+    font-size: 0.9em;
+    margin-left: 5px;
+    flex-shrink: 0;
+    max-width: 120px; /* Limit width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ensure query input is below ingestion */
+.chat-input-area .input-wrapper {
+    margin-top: 0; /* Remove top margin if added elsewhere */
+}
+
+
+/* Main Query Input Wrapper */
+.input-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 700px; /* Limit input width for better aesthetics */
+    background-color: var(--bg-medium-dark);
+    border: 1px solid var(--border-medium);
+    border-radius: 25px; /* Rounded corners for input */
+    overflow: hidden;
+}
+
+/* Query Input Textarea */
+#queryInput {
+    flex-grow: 1;
+    padding: 12px 20px;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    color: var(--text-light);
+    font-size: 1em;
+    resize: none; /* Controlled by JS */
+    max-height: 150px; /* Limit max height before scroll */
+    overflow-y: auto; /* Enable scroll if content exceeds max height */
+}
+
+#queryInput::placeholder {
+    color: var(--text-medium);
+}
+
+/* Submit Query Button (Send Icon) */
+#submitQuery {
+    background-color: transparent;
+    border: none;
+    color: var(--accent-pink-hot); /* Pink send icon */
+    padding: 0 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+#submitQuery:hover {
+    color: var(--accent-pink-light);
+}
+
+#submitQuery:disabled {
+    color: #666;
+    cursor: not-allowed;
+}
+
+#submitQuery .material-icons {
+    font-size: 1.8em;
+}
+
+/* --- Status, Loading, and Feedback Indicators --- */
+.status-message {
+    font-size: 0.9em;
+    color: var(--accent-pink-light); /* Light pink for status messages */
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.loading-indicator {
+    border: 3px solid var(--border-medium); /* Medium dark border */
+    border-top: 3px solid var(--accent-pink-hot); /* Hot pink for the spinner top */
+    border-radius: 50%; /* Makes it circular */
+    width: 25px;
+    height: 25px;
+    animation: spin 1s linear infinite; /* Spin animation */
+    margin-bottom: 5px;
+    display: flex; /* Ensure it centers */
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important; /* Utility class to hide elements */
+}
+
+/* Feedback Buttons Section */
+.feedback-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between buttons and text */
+    font-size: 0.9em;
+    color: var(--text-medium); /* Medium gray for feedback text */
+    margin-top: 10px; /* Space from the input area */
+}
+
+.feedback-btn {
+    background: none; /* No background by default */
+    border: 1px solid var(--border-medium); /* Border around feedback buttons */
+    border-radius: 5px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 1.1em;
+    color: var(--text-light); /* Light text for icons */
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.feedback-btn:hover {
+    background-color: var(--bg-light-dark); /* Lighter dark on hover */
+    border-color: var(--accent-pink-light); /* Light pink border on hover */
+}
+
+.feedback-btn[data-feedback="like"].selected {
+    background-color: var(--feedback-bg-selected); /* Green when selected */
+    color: white;
+    border-color: var(--feedback-bg-selected);
+}
+
+.feedback-btn[data-feedback="dislike"].selected {
+    background-color: var(--feedback-bg-dislike); /* Red when selected */
+    color: white;
+    border-color: var(--feedback-bg-dislike);
+}
+
+/* --- Responsive Adjustments for Smaller Screens --- */
+@media (max-width: 768px) {
+    .chat-container {
+        border-radius: 0; /* Remove rounded corners on small screens for full coverage */
+    }
+
+    .sidebar {
+        position: fixed; /* Fix sidebar position */
+        left: -280px; /* Hide sidebar by default off-screen */
+        height: 100%;
+        transition: left 0.3s ease-in-out; /* Smooth slide-in/out animation */
+        z-index: 20; /* Ensures sidebar is above main chat when open */
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for better visual separation */
+    }
+
+    .sidebar.open {
+        left: 0; /* Slide sidebar into view */
+    }
+
+    .main-chat {
+        width: 100%; /* Main chat takes full width */
+    }
+
+    .chat-header {
+        justify-content: center; /* Center header content */
+        position: relative; /* Allow positioning of pseudo-element */
+    }
+
+    /* Burger menu icon to open/close sidebar (using pseudo-element for simplicity) */
+    .chat-header::before {
+        content: '☰'; /* Unicode burger icon */
+        position: absolute;
+        left: 20px; /* Position it to the left */
+        font-size: 1.8em;
+        cursor: pointer;
+        color: var(--accent-pink-light); /* Light pink color */
+    }
+
+    /* Adjust responsive for mobile header, to make space for file controls */
+    .data-ingestion-wrapper {
+        flex-direction: column; /* Stack input groups vertically */
+        padding: 10px;
+    }
+    .input-group {
+        flex-direction: row; /* Keep elements in input group horizontal */
+        flex-wrap: nowrap;
+    }
+    .file-name-display {
+        flex-grow: 1; /* Allow file name to take space */
+    }
+    .custom-file-upload {
+        flex-shrink: 0; /* Prevent label from shrinking too much */
+        width: auto;
+    }
+}

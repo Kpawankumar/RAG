@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced RAG AI Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar">
+            <button class="new-chat-btn">
+                <span class="material-icons">add</span>
+                New Chat
+            </button>
+            <div class="history-area">
+                <h2>History</h2>
+                <ul id="queryHistoryList">
+                    </ul>
+                <button id="clearHistoryBtn" type="button" class="hidden">Clear All History</button>
+            </div>
+        </div>
+
+        <div class="main-chat">
+            <header class="chat-header">
+                <h2>Advanced RAG AI Assistant</h2>
+            </header>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    <div class="message-avatar ai-avatar">AI</div>
+                    <div class="message-content">
+                        <p>Hello! How can I assist you today?</p>
+                        </div>
+                </div>
+                </div>
+
+            <div class="chat-input-area">
+                <div id="statusMessage" class="status-message hidden"></div>
+                <div id="loadingIndicator" class="loading-indicator hidden"></div>
+
+                <div class="data-ingestion-wrapper">
+                    <div class="input-group">
+                        <input type="url" id="urlInput" placeholder="Enter URL to learn from..." class="ingestion-input">
+                        <button id="submitUrl" class="ingestion-btn" title="Process URL" type="button">
+                            <span class="material-icons">link</span>
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <label for="fileInput" class="custom-file-upload ingestion-input" title="Upload PDF or DOCX">
+                            <span class="material-icons">upload_file</span> Choose File (.pdf, .docx)
+                        </label>
+                        <input type="file" id="fileInput" accept=".pdf,.docx" class="hidden">
+                        <span id="fileNameDisplay" class="file-name-display">No file chosen</span>
+                        <button id="submitFile" class="ingestion-btn" title="Process File" type="button">
+                            <span class="material-icons">check</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <textarea id="queryInput" placeholder="Send a message..." rows="1"></textarea>
+                    <button id="submitQuery" type="button">
+                        <span class="material-icons">send</span>
+                    </button>
+                </div>
+
+                <div class="feedback-buttons hidden" id="feedbackSection">
+                    Was this answer helpful?
+                    <button class="feedback-btn" data-feedback="like" type="button">👍</button>
+                    <button class="feedback-btn" data-feedback="dislike" type="button">👎</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="script.js"></script> -->
+</body>
+</html>
