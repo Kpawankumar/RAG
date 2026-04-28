@@ -1,13 +1,12 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
-from flask_cors import CORS
-
 from TextProcessor import FileConverter
+from uploadValidification import detect_input_type
+from flask_cors import CORS
 from rag import RAG
 
-
-app = Flask(__name__)
+app = Flask(__name__, static_folder="ui", static_url_path="")
 CORS(app, supports_credentials=True)
 
 UPLOAD_FOLDER = "uploads"
@@ -22,8 +21,13 @@ def allowed_file(filename):
 
 
 @app.route("/")
-def home():
-    return "RAG API Running"
+def serve_index():
+    return send_from_directory(app.static_folder, "index.html")
+
+
+@app.route("/<path:path>")
+def serve_static_file(path):
+    return send_from_directory(app.static_folder, path)
 
 
 @app.route("/ingest_url", methods=["POST"])
@@ -55,21 +59,21 @@ def ingest_file():
     if file.filename == "":
         return jsonify({"detail": "No file was selected"}), 400
 
-    if not (file and allowed_file(file.filename)):
-        return jsonify({"detail": "Unsupported file type"}), 400
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
 
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    file.save(filepath)
+        try:
+            converter = FileConverter(filepath)
+            result = converter.convert()
+            if not os.path.isfile(result):
+                return jsonify({"detail": f"Conversion failed or error: {result}"}), 500
+            return jsonify({"message": "File processed successfully!"}), 200
+        except Exception as e:
+            return jsonify({"detail": f"Error processing file: {str(e)}"}), 500
 
-    try:
-        converter = FileConverter(filepath)
-        result = converter.convert()
-        if not os.path.isfile(result):
-            return jsonify({"detail": f"Conversion failed or error: {result}"}), 500
-        return jsonify({"message": "File processed successfully!"}), 200
-    except Exception as e:
-        return jsonify({"detail": f"Error processing file: {str(e)}"}), 500
+    return jsonify({"detail": "Unsupported file type"}), 400
 
 
 @app.route("/rag", methods=["POST"])
@@ -78,16 +82,13 @@ def run_rag():
     if not data or "query" not in data:
         return jsonify({"error": "Missing 'query' in request body"}), 400
 
+    user_question = data["query"]
     try:
-        answer = RAG(data["query"])
+        answer = RAG(user_question)
         return jsonify({"answer": answer})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-@app.route("/query", methods=["POST"])
-def query():
-    return run_rag()
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

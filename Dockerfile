@@ -17,4 +17,4 @@ EXPOSE 5000
 ENV PYTHONUNBUFFERED=1
 
 # Start the app (adjust if using something like uvicorn or gunicorn)
-CMD ["python", "api/index.py"]
+CMD ["python", "api.py"]
