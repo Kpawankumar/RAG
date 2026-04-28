@@ -18,7 +18,7 @@ except ModuleNotFoundError:
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 
-UI_DIR = PROJECT_ROOT / "ui"
+UI_DIR = PROJECT_ROOT / "frontend"
 RUNTIME_DIR = PROJECT_ROOT / "runtime"
 UPLOAD_DIR = RUNTIME_DIR / "uploads"
 

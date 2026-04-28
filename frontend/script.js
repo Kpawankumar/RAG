@@ -296,11 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Backend API Calls ---
     function getApiBaseUrl() {
-        // If UI is served by Flask, use same origin. If served via static server (e.g. :3000), target backend on :10000.
-        if (window.location.port === "10000") {
-            return window.location.origin;
+        // Vercel/static deployments can define this global in frontend/config.js.
+        if (window.RAG_API_BASE_URL && window.RAG_API_BASE_URL.trim()) {
+            return window.RAG_API_BASE_URL.trim().replace(/\/$/, "");
         }
-        return `${window.location.protocol}//${window.location.hostname}:10000`;
+        // Local development fallback.
+        return "http://127.0.0.1:10000";
     }
 
     // This function simulates your RAG backend API for asking questions.
