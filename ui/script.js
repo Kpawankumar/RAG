@@ -294,11 +294,18 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistory(); // Re-render history to update titles/selection
     }
 
-    // --- Backend API Calls (Conceptual Placeholders) ---
+    // --- Backend API Calls ---
+    function getApiBaseUrl() {
+        // If UI is served by Flask, use same origin. If served via static server (e.g. :3000), target backend on :10000.
+        if (window.location.port === "10000") {
+            return window.location.origin;
+        }
+        return `${window.location.protocol}//${window.location.hostname}:10000`;
+    }
 
     // This function simulates your RAG backend API for asking questions.
     async function callRagService(query) {
-        const API_URL = 'http://127.0.0.1:5000/rag'; // Example FastAPI endpoint
+        const API_URL = `${getApiBaseUrl()}/rag`;
 
         try {
             const response = await fetch(API_URL, {
@@ -312,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || errorData.message || 'Failed to get RAG response from backend.');
+                throw new Error(errorData.detail || errorData.error || errorData.message || 'Failed to get RAG response from backend.');
             }
 
             const data = await response.json();
@@ -320,15 +327,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return { success: true, answer: data.answer || 'No specific answer found based on provided context.' };
         } catch (error) {
             console.error("Backend RAG service error:", error);
-            // Provide a user-friendly message for common network/server errors
-            return { success: false, message: `Could not connect to RAG service or an error occurred: ${error.message}. Please ensure the backend is running.` };
+            const errorMessage = error.message || "Unknown backend error.";
+            // Distinguish connectivity issues from quota/rate-limit/provider errors.
+            if (
+                errorMessage.toLowerCase().includes("quota") ||
+                errorMessage.includes("429") ||
+                errorMessage.toLowerCase().includes("rate")
+            ) {
+                return {
+                    success: false,
+                    message: `RAG provider quota/rate limit reached: ${errorMessage}`
+                };
+            }
+            if (errorMessage.toLowerCase().includes("failed to fetch")) {
+                return {
+                    success: false,
+                    message: "Could not connect to backend. Please ensure the server is running on port 10000."
+                };
+            }
+            return { success: false, message: `RAG request failed: ${errorMessage}` };
         }
     }
 
     // New: Function to send a URL for ingestion to your backend.
     // YOU MUST REPLACE THIS WITH YOUR ACTUAL BACKEND FETCH LOGIC.
     async function ingestUrl(url) {
-        const API_URL = 'http://127.0.0.1:5000/ingest_url';
+        const API_URL = `${getApiBaseUrl()}/ingest_url`;
 
         try {
             const response = await fetch(API_URL, {
@@ -355,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // New: Function to send a file for ingestion to your backend.
     async function ingestFile(file) {       
-        const API_URL = 'http://127.0.0.1:5000/ingest_file'; 
+        const API_URL = `${getApiBaseUrl()}/ingest_file`;
         const formData = new FormData();
         formData.append('file', file); // 'file' should match the backend's expected field name for the uploaded file
         try {

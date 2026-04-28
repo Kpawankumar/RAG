@@ -1,1 +1,21 @@
 .env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime-generated app data (Render/local)
+runtime/
+uploads/
+faiss_index/
+output.txt
+
+# Node (optional demo)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

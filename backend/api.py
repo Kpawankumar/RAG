@@ -1,22 +1,38 @@
 import os
-from flask import Flask, request, jsonify, send_from_directory
-from werkzeug.utils import secure_filename
-from TextProcessor import FileConverter
-from uploadValidification import detect_input_type
-from flask_cors import CORS
-from rag import RAG
+import traceback
+from pathlib import Path
 
-app = Flask(__name__, static_folder="ui", static_url_path="")
+from flask import Flask, jsonify, request, send_from_directory
+from flask_cors import CORS
+from werkzeug.utils import secure_filename
+
+try:
+    # When launched as a module (recommended): `python -m backend.api`
+    from backend.TextProcessor import FileConverter
+    from backend.rag import RAG
+except ModuleNotFoundError:
+    # When launched as a script: `python backend/api.py`
+    from TextProcessor import FileConverter
+    from rag import RAG
+
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
+
+UI_DIR = PROJECT_ROOT / "ui"
+RUNTIME_DIR = PROJECT_ROOT / "runtime"
+UPLOAD_DIR = RUNTIME_DIR / "uploads"
+
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+app = Flask(__name__, static_folder=str(UI_DIR), static_url_path="")
 CORS(app, supports_credentials=True)
 
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["UPLOAD_FOLDER"] = str(UPLOAD_DIR)
 
 ALLOWED_FILE = {"pdf", "docx", "json", "txt"}
 
 
-def allowed_file(filename):
+def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_FILE
 
 
@@ -26,7 +42,7 @@ def serve_index():
 
 
 @app.route("/<path:path>")
-def serve_static_file(path):
+def serve_static_file(path: str):
     return send_from_directory(app.static_folder, path)
 
 
@@ -41,7 +57,7 @@ def ingest_url():
         return jsonify({"detail": "Empty URL provided"}), 400
 
     try:
-        converter = FileConverter(url)
+        converter = FileConverter(url, output_text_file=str(RUNTIME_DIR / "output.txt"))
         result = converter.convert()
         if not os.path.isfile(result):
             return jsonify({"detail": f"Conversion failed or error: {result}"}), 500
@@ -65,7 +81,7 @@ def ingest_file():
         file.save(filepath)
 
         try:
-            converter = FileConverter(filepath)
+            converter = FileConverter(filepath, output_text_file=str(RUNTIME_DIR / "output.txt"))
             result = converter.convert()
             if not os.path.isfile(result):
                 return jsonify({"detail": f"Conversion failed or error: {result}"}), 500
@@ -80,15 +96,22 @@ def ingest_file():
 def run_rag():
     data = request.get_json()
     if not data or "query" not in data:
-        return jsonify({"error": "Missing 'query' in request body"}), 400
+        return jsonify({"detail": "Missing 'query' in request body"}), 400
 
     user_question = data["query"]
     try:
-        answer = RAG(user_question)
+        answer = RAG(user_question, runtime_dir=RUNTIME_DIR)
         return jsonify({"answer": answer})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        error_message = str(e) or repr(e) or f"{type(e).__name__}()"
+        print("RAG error:", error_message)
+        traceback.print_exc()
+        if "429" in error_message or "quota" in error_message.lower():
+            return jsonify({"detail": error_message}), 429
+        return jsonify({"detail": error_message}), 500
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.getenv("PORT", "10000"))
+    app.run(host="0.0.0.0", port=port)
+
