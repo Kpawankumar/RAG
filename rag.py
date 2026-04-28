@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.document_loaders import TextLoader
@@ -12,8 +11,9 @@ VECTOR_DB_PATH = "faiss_index"
 CONTEXT_FILE = "output.txt"
 
 def RAG(user_input):
-    load_dotenv()
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    if not GOOGLE_API_KEY:
+        raise ValueError("GOOGLE_API_KEY is not set in environment variables.")
     MODEL1 = "gemini-2.0-flash"
 
     model = ChatGoogleGenerativeAI(model=MODEL1, google_api_key=GOOGLE_API_KEY)

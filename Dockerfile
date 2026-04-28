@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirementsrag.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose port (adjust if using a different one)
 EXPOSE 5000
@@ -17,4 +17,4 @@ EXPOSE 5000
 ENV PYTHONUNBUFFERED=1
 
 # Start the app (adjust if using something like uvicorn or gunicorn)
-CMD ["python", "api.py"]
+CMD ["python", "api/index.py"]
